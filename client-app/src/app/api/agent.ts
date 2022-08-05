@@ -1,8 +1,9 @@
+import { history } from "./../../index";
 import { store } from "./../stores/store";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
-import { history } from "../..";
 import { Activity } from "../models/activity";
+import { User, UserFormValues } from "../models/user";
 
 const sleep = (delay: number) => {
   return new Promise((resolve) => {
@@ -11,6 +12,15 @@ const sleep = (delay: number) => {
 };
 
 axios.defaults.baseURL = "http://localhost:5000/api";
+
+axios.interceptors.request.use((config: any) => {
+  const token = store.commonStore.token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 axios.interceptors.response.use(
   async (response) => {
     await sleep(1000);
@@ -45,7 +55,7 @@ axios.interceptors.response.use(
       case 500:
         toast.error("Server Error");
         //store.commonStore.setServerError(data)
-        //history.push('/server-error');
+        //historyLog.push('/server-error');
         break;
     }
     return Promise.reject(error);
@@ -71,8 +81,16 @@ const Activities = {
   delete: (id: string) => requests.delete<void>(`/activities/${id}`),
 };
 
+const Account = {
+  current: () => requests.get<User>("/account"),
+  login: (user: UserFormValues) => requests.post<User>("/account/login", user),
+  register: (user: UserFormValues) =>
+    requests.post<User>("/account/register", user),
+};
+
 const agent = {
   Activities,
+  Account,
 };
 
 export default agent;

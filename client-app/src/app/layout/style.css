@@ -49,4 +49,8 @@ body {
   font-weight: normal;
 }
 
+.customItem{
+  width: 65% !important;
+}
+
 /*end home page styles*/
